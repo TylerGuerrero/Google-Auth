@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
+const passport = require('passport')
 const mongoose = require('mongoose');
 
 const config = require('./config/Config')
@@ -18,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public'));
 app.use(morgan('dev'))
+
+require('./config/Passport')(passport);
 
 app.get('/', (req, res) => {
     res.render('home');
