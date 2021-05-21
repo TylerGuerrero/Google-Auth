@@ -10,6 +10,24 @@ const googleAuth = require('./routes/Router');
 // init server
 const app = express();
 
+const options = {
+    useNewUrlParser: true, 
+    useUnifiedTopology: true, 
+    useCreateIndex: true
+}
+
+mongoose.connect(config.database, options).catch((err) => {
+    console.log(err);
+});
+
+mongoose.connection.on('error', () => {
+    console.log('Database error')
+})
+
+mongoose.connection.once('open', () => {
+    console.log('MongoDB is running')
+})
+
 // server settings
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'));
