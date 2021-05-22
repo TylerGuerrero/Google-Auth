@@ -1,11 +1,13 @@
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
-const passport = require('passport')
 const mongoose = require('mongoose');
+const passport = require('passport')
 
 const config = require('./config/Config')
 const googleAuth = require('./routes/Router');
+const cookieSession = require('cookie-session');
+
 
 // init server
 const app = express();
@@ -37,8 +39,16 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public'));
 app.use(morgan('dev'))
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(cookieSession({
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [config.session.cookieKey]
+}))
 
-require('./config/Passport')(passport);
+
+
+require('./config/Passport')
 
 app.get('/', (req, res) => {
     res.render('home');

@@ -1,30 +1,44 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const config = require('./Config')
 const User = require('../models/User')
+const passport = require('passport')
 
-module.exports = function(passport) {
-    passport.use(new GoogleStrategy({
-        // options for the google strategy
-        clientID: config.google.clientID,
-        clientSecret: config.google.clientSecret,
-        callbackURL: 'http://localhost:3000/auth/google/redirect'
-    }, async (accessToken, refreshToken, profile, done) => {
-        // passport function callback
-        // runs as middleware from the callback
-        console.log('passport callback function fire')
-        console.log(profile)
+passport.serializeUser((user, done) => {
+    done(null, user.id)
+})
 
-        const user = new User({
-            username: profile.displayName,
-            googleId: profile.id
-        })
+passport.deserializeUser((id, done) => {
+    User.findById(id).then((user) => {
+        done(null, user)
+    }).catch((err) => {
+        console.log(err)
+    })
+})
 
-        await user.save()
-        .then((user) => {
-            console.log('new user created' + user)
-        })
-        .catch((err) => {
-            console.log(err);
-        })
-    }))
-}
+passport.use(new GoogleStrategy({
+    // options for the google strategy
+    clientID: config.google.clientID,
+    clientSecret: config.google.clientSecret,
+    callbackURL: 'http://localhost:3000/auth/google/redirect'
+}, async (accessToken, refreshToken, profile, done) => {
+    // passport function callback
+    // runs as middleware from the callback
+    console.log('passport middleware fired callback function');
+
+    try {
+        const user = await User.findOne({googleId: profile.id}).exec()
+
+        if (user) {
+            return done(null, user)
+        } else {
+            const newUser = await User.create({
+                username: profile.displayName,
+                googleId: profile.id
+            })  
+
+            return done(null, newUser)
+        }
+    } catch(err) {
+        return done(err, false, {error: err.message})
+    }
+}))
