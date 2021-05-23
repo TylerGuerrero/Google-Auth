@@ -4,14 +4,14 @@ const User = require('../models/User')
 const passport = require('passport')
 
 passport.serializeUser((user, done) => {
+    // sets cookies
     done(null, user.id)
 })
 
 passport.deserializeUser((id, done) => {
     User.findById(id).then((user) => {
+        // sets req.user to user
         done(null, user)
-    }).catch((err) => {
-        console.log(err)
     })
 })
 
@@ -29,13 +29,14 @@ passport.use(new GoogleStrategy({
         const user = await User.findOne({googleId: profile.id}).exec()
 
         if (user) {
+            // sets req.user to user
             return done(null, user)
         } else {
             const newUser = await User.create({
                 username: profile.displayName,
                 googleId: profile.id
             })  
-
+            // sets req.user to user
             return done(null, newUser)
         }
     } catch(err) {
