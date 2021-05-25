@@ -8,7 +8,8 @@ const userSchema = new Schema({
     googleId: {
         type: String,
         required: true
-    }
+    },
+    thumbnail: {type: String}
 }, {timestamps: {createdAt: true}});
 
 const User = model('User', userSchema);
